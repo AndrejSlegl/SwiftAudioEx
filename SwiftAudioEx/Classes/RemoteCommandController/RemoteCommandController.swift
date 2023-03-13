@@ -73,6 +73,8 @@ public class RemoteCommandController {
             self.enableCommand(FeedbackCommand.dislike.set(isActive: isActive, localizedTitle: localizedTitle, localizedShortTitle: localizedShortTitle))
         case .bookmark(let isActive, let localizedTitle, let localizedShortTitle):
             self.enableCommand(FeedbackCommand.bookmark.set(isActive: isActive, localizedTitle: localizedTitle, localizedShortTitle: localizedShortTitle))
+        case .changePlaybackRate:
+            self.enableCommand(ChangePlaybackRateCommand())
         }
     }
     
@@ -90,6 +92,7 @@ public class RemoteCommandController {
         case .like(_, _, _): self.disableCommand(FeedbackCommand.like)
         case .dislike(_, _, _): self.disableCommand(FeedbackCommand.dislike)
         case .bookmark(_, _, _): self.disableCommand(FeedbackCommand.bookmark)
+        case .changePlaybackRate: self.disableCommand(ChangePlaybackRateCommand())
         }
     }
     
@@ -107,6 +110,7 @@ public class RemoteCommandController {
     public lazy var handleLikeCommand: RemoteCommandHandler = handleLikeCommandDefault
     public lazy var handleDislikeCommand: RemoteCommandHandler = handleDislikeCommandDefault
     public lazy var handleBookmarkCommand: RemoteCommandHandler = handleBookmarkCommandDefault
+    public lazy var handleChangePlaybackRateCommand: RemoteCommandHandler = handleChangePlaybackRateCommandDefault
     
     private func handlePlayCommandDefault(event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
         if let audioPlayer = audioPlayer {
@@ -195,6 +199,14 @@ public class RemoteCommandController {
     
     private func handleBookmarkCommandDefault(event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
         MPRemoteCommandHandlerStatus.success
+    }
+    
+    private func handleChangePlaybackRateCommandDefault(event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
+        if let event = event as? MPChangePlaybackRateCommandEvent {
+            audioPlayer?.rate = event.playbackRate
+            return .success
+        }
+        return .commandFailed
     }
     
     private func getRemoteCommandHandlerStatus(forError error: Error) -> MPRemoteCommandHandlerStatus {

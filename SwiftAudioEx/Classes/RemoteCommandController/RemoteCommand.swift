@@ -103,6 +103,19 @@ public struct FeedbackCommand: RemoteCommandProtocol {
     }
 }
 
+public struct ChangePlaybackRateCommand: RemoteCommandProtocol {
+    public typealias Command = MPChangePlaybackRateCommand
+    
+    public var id: String = "ChangePlaybackRate"
+    public var commandKeyPath: KeyPath<MPRemoteCommandCenter, MPChangePlaybackRateCommand> = \.changePlaybackRateCommand
+    public var handlerKeyPath: KeyPath<RemoteCommandController, RemoteCommandHandler> = \.handleChangePlaybackRateCommand
+    
+    func set(supportedPlaybackRates: [NSNumber]) -> ChangePlaybackRateCommand {
+        MPRemoteCommandCenter.shared()[keyPath: commandKeyPath].supportedPlaybackRates = supportedPlaybackRates
+        return self
+    }
+}
+
 public enum RemoteCommand: CustomStringConvertible {
 
     case play
@@ -128,6 +141,8 @@ public enum RemoteCommand: CustomStringConvertible {
     case dislike(isActive: Bool, localizedTitle: String, localizedShortTitle: String)
     
     case bookmark(isActive: Bool, localizedTitle: String, localizedShortTitle: String)
+    
+    case changePlaybackRate
 
     public var description: String {
         switch self {
@@ -143,6 +158,7 @@ public enum RemoteCommand: CustomStringConvertible {
         case .like(_, _, _): return "like"
         case .dislike(_, _, _): return "dislike"
         case .bookmark(_, _, _): return "bookmark"
+        case .changePlaybackRate: return "changePlaybackRate"
         }
     }
     
@@ -163,7 +179,8 @@ public enum RemoteCommand: CustomStringConvertible {
             .skipBackward(preferredIntervals: []),
             .like(isActive: false, localizedTitle: "", localizedShortTitle: ""),
             .dislike(isActive: false, localizedTitle: "", localizedShortTitle: ""),
-            .bookmark(isActive: false, localizedTitle: "", localizedShortTitle: "")
+            .bookmark(isActive: false, localizedTitle: "", localizedShortTitle: ""),
+            .changePlaybackRate
         ]
     }
     
