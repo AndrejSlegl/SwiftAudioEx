@@ -214,12 +214,9 @@ public class RemoteCommandController {
     }
     
     private func handleChangeRepeatModeCommandDefault(event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
-        Logger.shared.log("handleChangeRepeatModeCommand: \(event), player: \(String(describing: audioPlayer)), isMainThread: \(Thread.isMainThread)")
-        
         guard let queuedAudioPlayer = audioPlayer as? QueuedAudioPlayer else { return .commandFailed }
         guard let event = event as? MPChangeRepeatModeCommandEvent else { return .commandFailed }
         
-        Logger.shared.log("repeatType: \(event.repeatType)")
         switch event.repeatType {
         case .off:
             queuedAudioPlayer.repeatMode = .off
