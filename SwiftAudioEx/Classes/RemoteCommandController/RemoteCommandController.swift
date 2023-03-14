@@ -77,6 +77,10 @@ public class RemoteCommandController {
             self.enableCommand(ChangePlaybackRateCommand.default.set(supportedPlaybackRates: supportedRates))
         case .changeRepeatMode:
             self.enableCommand(ChangeRepeatModeCommand.default)
+        case .seekForward:
+            self.enableCommand(SeekCommand.forward)
+        case .seekBackward:
+            self.enableCommand(SeekCommand.backward)
         }
     }
     
@@ -96,6 +100,8 @@ public class RemoteCommandController {
         case .bookmark(_, _, _): self.disableCommand(FeedbackCommand.bookmark)
         case .changePlaybackRate: self.disableCommand(ChangePlaybackRateCommand.default)
         case .changeRepeatMode: self.disableCommand(ChangeRepeatModeCommand.default)
+        case .seekForward: self.disableCommand(SeekCommand.forward)
+        case .seekBackward: self.disableCommand(SeekCommand.backward)
         }
     }
     
@@ -115,6 +121,8 @@ public class RemoteCommandController {
     public lazy var handleBookmarkCommand: RemoteCommandHandler = handleBookmarkCommandDefault
     public lazy var handleChangePlaybackRateCommand: RemoteCommandHandler = handleChangePlaybackRateCommandDefault
     public lazy var handleChangeRepeatModeCommand: RemoteCommandHandler = handleChangeRepeatModeCommandDefault
+    public lazy var handleSeekForwardCommand: RemoteCommandHandler = handleSeekForwardCommandDefault
+    public lazy var handleSeekBackwardCommand: RemoteCommandHandler = handleSeekBackwardCommandDefault
     
     private func handlePlayCommandDefault(event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
         if let audioPlayer = audioPlayer {
@@ -206,9 +214,7 @@ public class RemoteCommandController {
     }
     
     private func handleChangePlaybackRateCommandDefault(event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
-        Logger.shared.log("handleChangePlaybackRateCommand: \(event)")
         guard let event = event as? MPChangePlaybackRateCommandEvent else { return .commandFailed }
-        Logger.shared.log("playbackRate: \(event.playbackRate)")
         audioPlayer?.rate = event.playbackRate
         return .success
     }
@@ -224,6 +230,34 @@ public class RemoteCommandController {
             queuedAudioPlayer.repeatMode = .queue
         case .one:
             queuedAudioPlayer.repeatMode = .track
+        @unknown default:
+            return .commandFailed
+        }
+        return .success
+    }
+    
+    private func handleSeekForwardCommandDefault(event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
+        guard let event = event as? MPSeekCommandEvent else { return .commandFailed }
+        Logger.shared.log("handleSeekForwardCommand: \(event.type)")
+        switch event.type {
+        case .beginSeeking:
+            audioPlayer?.rate = 12
+        case .endSeeking:
+            audioPlayer?.rate = 1
+        @unknown default:
+            return .commandFailed
+        }
+        return .success
+    }
+    
+    private func handleSeekBackwardCommandDefault(event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
+        guard let event = event as? MPSeekCommandEvent else { return .commandFailed }
+        Logger.shared.log("handleSeekBackwardCommand: \(event.type)")
+        switch event.type {
+        case .beginSeeking:
+            audioPlayer?.rate = -12
+        case .endSeeking:
+            audioPlayer?.rate = 1
         @unknown default:
             return .commandFailed
         }

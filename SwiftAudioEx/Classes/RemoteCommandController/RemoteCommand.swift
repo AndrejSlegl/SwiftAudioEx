@@ -153,6 +153,16 @@ public struct ChangeRepeatModeCommand: RemoteCommandProtocol {
     }
 }
 
+public struct SeekCommand: RemoteCommandProtocol {
+    public typealias Command = MPRemoteCommand
+    public var id: String
+    public var commandKeyPath: KeyPath<MPRemoteCommandCenter, MPRemoteCommand>
+    public var handlerKeyPath: KeyPath<RemoteCommandController, RemoteCommandHandler>
+    
+    public static let forward = SeekCommand(id: "SeekForward", commandKeyPath: \.seekForwardCommand, handlerKeyPath: \.handleSeekForwardCommand)
+    public static let backward = SeekCommand(id: "SeekBackward", commandKeyPath: \.seekBackwardCommand, handlerKeyPath: \.handleSeekBackwardCommand)
+}
+
 public enum RemoteCommand: CustomStringConvertible {
 
     case play
@@ -182,6 +192,9 @@ public enum RemoteCommand: CustomStringConvertible {
     case changePlaybackRate(supportedRates: [Float])
     
     case changeRepeatMode
+    
+    case seekForward
+    case seekBackward
 
     public var description: String {
         switch self {
@@ -199,6 +212,8 @@ public enum RemoteCommand: CustomStringConvertible {
         case .bookmark(_, _, _): return "bookmark"
         case .changePlaybackRate: return "changePlaybackRate"
         case .changeRepeatMode: return "changeRepeatMode"
+        case .seekForward: return "seekForward"
+        case .seekBackward: return "seekBackward"
         }
     }
     
@@ -221,7 +236,9 @@ public enum RemoteCommand: CustomStringConvertible {
             .dislike(isActive: false, localizedTitle: "", localizedShortTitle: ""),
             .bookmark(isActive: false, localizedTitle: "", localizedShortTitle: ""),
             .changePlaybackRate(supportedRates: [1, 2]),
-            .changeRepeatMode
+            .changeRepeatMode,
+            .seekForward,
+            .seekBackward
         ]
     }
     
