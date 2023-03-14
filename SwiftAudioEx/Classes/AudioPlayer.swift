@@ -31,6 +31,9 @@ public class AudioPlayer: AVPlayerWrapperDelegate {
      */
     public var audioTimePitchAlgorithm: AVAudioTimePitchAlgorithm = AVAudioTimePitchAlgorithm.timeDomain
 
+    public var seekForwardRate: Float = 14
+    public var seekBackwardRate: Float = -14
+    
     /**
      Default remote commands to use for each playing item
      */
@@ -135,7 +138,10 @@ public class AudioPlayer: AVPlayerWrapperDelegate {
 
     public var rate: Float {
         get { wrapper.rate }
-        set { wrapper.rate = newValue }
+        set {
+            wrapper.rate = newValue
+            updateNowPlayingPlaybackValues()
+        }
     }
 
     // MARK: - Init
@@ -242,6 +248,18 @@ public class AudioPlayer: AVPlayerWrapperDelegate {
      */
     public func seek(by offset: TimeInterval) {
         wrapper.seek(by: offset)
+    }
+    
+    public func beginSeekForward() {
+        rate = seekForwardRate
+    }
+    
+    public func beginSeekBackward() {
+        rate = seekBackwardRate
+    }
+    
+    public func stopSeek() {
+        rate = 1
     }
     
     // MARK: - Remote Command Center

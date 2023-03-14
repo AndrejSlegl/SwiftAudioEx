@@ -238,12 +238,11 @@ public class RemoteCommandController {
     
     private func handleSeekForwardCommandDefault(event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
         guard let event = event as? MPSeekCommandEvent else { return .commandFailed }
-        Logger.shared.log("handleSeekForwardCommand: \(event.type)")
         switch event.type {
         case .beginSeeking:
-            audioPlayer?.rate = 12
+            audioPlayer?.beginSeekForward()
         case .endSeeking:
-            audioPlayer?.rate = 1
+            audioPlayer?.stopSeek()
         @unknown default:
             return .commandFailed
         }
@@ -252,12 +251,11 @@ public class RemoteCommandController {
     
     private func handleSeekBackwardCommandDefault(event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
         guard let event = event as? MPSeekCommandEvent else { return .commandFailed }
-        Logger.shared.log("handleSeekBackwardCommand: \(event.type)")
         switch event.type {
         case .beginSeeking:
-            audioPlayer?.rate = -12
+            audioPlayer?.beginSeekBackward()
         case .endSeeking:
-            audioPlayer?.rate = 1
+            audioPlayer?.stopSeek()
         @unknown default:
             return .commandFailed
         }
