@@ -91,6 +91,8 @@ extension AudioPlayer {
          - Note: It is only fired for instances of a QueuedAudioPlayer.
          */
         public let currentItem: AudioPlayer.Event<CurrentItemEventData> = AudioPlayer.Event()
+        
+        public let repeatModeChanged: AudioPlayer.Event<RepeatMode> = AudioPlayer.Event()
     }
     
     public typealias EventClosure<EventData> = (EventData) -> Void

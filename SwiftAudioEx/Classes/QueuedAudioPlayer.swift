@@ -22,7 +22,13 @@ public class QueuedAudioPlayer: AudioPlayer, QueueManagerDelegate {
     }
 
     /// The repeat mode for the queue player.
-    public var repeatMode: RepeatMode = .off
+    public var repeatMode: RepeatMode = .off {
+        didSet {
+            guard repeatMode != oldValue else { return }
+            event.repeatModeChanged.emit(data: repeatMode)
+            ChangeRepeatModeCommand.default.set(repeatMode: repeatMode)
+        }
+    }
 
     public override var currentItem: AudioItem? {
         queue.current

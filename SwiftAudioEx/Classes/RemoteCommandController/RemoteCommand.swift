@@ -106,12 +106,49 @@ public struct FeedbackCommand: RemoteCommandProtocol {
 public struct ChangePlaybackRateCommand: RemoteCommandProtocol {
     public typealias Command = MPChangePlaybackRateCommand
     
-    public var id: String = "ChangePlaybackRate"
-    public var commandKeyPath: KeyPath<MPRemoteCommandCenter, MPChangePlaybackRateCommand> = \.changePlaybackRateCommand
-    public var handlerKeyPath: KeyPath<RemoteCommandController, RemoteCommandHandler> = \.handleChangePlaybackRateCommand
+    public var id: String
+    public var commandKeyPath: KeyPath<MPRemoteCommandCenter, MPChangePlaybackRateCommand>
+    public var handlerKeyPath: KeyPath<RemoteCommandController, RemoteCommandHandler>
     
-    func set(supportedPlaybackRates: [NSNumber]) -> ChangePlaybackRateCommand {
-        MPRemoteCommandCenter.shared()[keyPath: commandKeyPath].supportedPlaybackRates = supportedPlaybackRates
+    public static let `default` = ChangePlaybackRateCommand(
+        id: "ChangePlaybackRate",
+        commandKeyPath: \.changePlaybackRateCommand,
+        handlerKeyPath: \.handleChangePlaybackRateCommand
+    )
+    
+    @discardableResult
+    func set(supportedPlaybackRates: [Float]) -> ChangePlaybackRateCommand {
+        MPRemoteCommandCenter.shared()[keyPath: commandKeyPath].supportedPlaybackRates = supportedPlaybackRates.map { NSNumber(value: $0) }
+        return self
+    }
+}
+
+public struct ChangeRepeatModeCommand: RemoteCommandProtocol {
+    public typealias Command = MPChangeRepeatModeCommand
+    
+    public var id: String
+    public var commandKeyPath: KeyPath<MPRemoteCommandCenter, MPChangeRepeatModeCommand>
+    public var handlerKeyPath: KeyPath<RemoteCommandController, RemoteCommandHandler>
+    
+    public static let `default` = ChangeRepeatModeCommand(
+        id: "ChangeRepeatMode",
+        commandKeyPath: \.changeRepeatModeCommand,
+        handlerKeyPath: \.handleChangeRepeatModeCommand
+    )
+    
+    @discardableResult
+    public func set(repeatMode: RepeatMode) -> ChangeRepeatModeCommand {
+        let repeatType: MPRepeatType
+        switch repeatMode {
+        case .off:
+            repeatType = .off
+        case .track:
+            repeatType = .one
+        case .queue:
+            repeatType = .all
+        }
+        
+        MPRemoteCommandCenter.shared()[keyPath: commandKeyPath].currentRepeatType = repeatType
         return self
     }
 }
@@ -142,7 +179,9 @@ public enum RemoteCommand: CustomStringConvertible {
     
     case bookmark(isActive: Bool, localizedTitle: String, localizedShortTitle: String)
     
-    case changePlaybackRate
+    case changePlaybackRate(supportedRates: [Float])
+    
+    case changeRepeatMode
 
     public var description: String {
         switch self {
@@ -159,6 +198,7 @@ public enum RemoteCommand: CustomStringConvertible {
         case .dislike(_, _, _): return "dislike"
         case .bookmark(_, _, _): return "bookmark"
         case .changePlaybackRate: return "changePlaybackRate"
+        case .changeRepeatMode: return "changeRepeatMode"
         }
     }
     
@@ -180,7 +220,8 @@ public enum RemoteCommand: CustomStringConvertible {
             .like(isActive: false, localizedTitle: "", localizedShortTitle: ""),
             .dislike(isActive: false, localizedTitle: "", localizedShortTitle: ""),
             .bookmark(isActive: false, localizedTitle: "", localizedShortTitle: ""),
-            .changePlaybackRate
+            .changePlaybackRate(supportedRates: [1, 2]),
+            .changeRepeatMode
         ]
     }
     

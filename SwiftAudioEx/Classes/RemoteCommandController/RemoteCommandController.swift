@@ -73,8 +73,10 @@ public class RemoteCommandController {
             self.enableCommand(FeedbackCommand.dislike.set(isActive: isActive, localizedTitle: localizedTitle, localizedShortTitle: localizedShortTitle))
         case .bookmark(let isActive, let localizedTitle, let localizedShortTitle):
             self.enableCommand(FeedbackCommand.bookmark.set(isActive: isActive, localizedTitle: localizedTitle, localizedShortTitle: localizedShortTitle))
-        case .changePlaybackRate:
-            self.enableCommand(ChangePlaybackRateCommand())
+        case .changePlaybackRate(let supportedRates):
+            self.enableCommand(ChangePlaybackRateCommand.default.set(supportedPlaybackRates: supportedRates))
+        case .changeRepeatMode:
+            self.enableCommand(ChangeRepeatModeCommand.default)
         }
     }
     
@@ -92,7 +94,8 @@ public class RemoteCommandController {
         case .like(_, _, _): self.disableCommand(FeedbackCommand.like)
         case .dislike(_, _, _): self.disableCommand(FeedbackCommand.dislike)
         case .bookmark(_, _, _): self.disableCommand(FeedbackCommand.bookmark)
-        case .changePlaybackRate: self.disableCommand(ChangePlaybackRateCommand())
+        case .changePlaybackRate: self.disableCommand(ChangePlaybackRateCommand.default)
+        case .changeRepeatMode: self.disableCommand(ChangeRepeatModeCommand.default)
         }
     }
     
@@ -111,6 +114,7 @@ public class RemoteCommandController {
     public lazy var handleDislikeCommand: RemoteCommandHandler = handleDislikeCommandDefault
     public lazy var handleBookmarkCommand: RemoteCommandHandler = handleBookmarkCommandDefault
     public lazy var handleChangePlaybackRateCommand: RemoteCommandHandler = handleChangePlaybackRateCommandDefault
+    public lazy var handleChangeRepeatModeCommand: RemoteCommandHandler = handleChangeRepeatModeCommandDefault
     
     private func handlePlayCommandDefault(event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
         if let audioPlayer = audioPlayer {
@@ -202,11 +206,31 @@ public class RemoteCommandController {
     }
     
     private func handleChangePlaybackRateCommandDefault(event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
-        if let event = event as? MPChangePlaybackRateCommandEvent {
-            audioPlayer?.rate = event.playbackRate
-            return .success
+        Logger.shared.log("handleChangePlaybackRateCommand: \(event)")
+        guard let event = event as? MPChangePlaybackRateCommandEvent else { return .commandFailed }
+        Logger.shared.log("playbackRate: \(event.playbackRate)")
+        audioPlayer?.rate = event.playbackRate
+        return .success
+    }
+    
+    private func handleChangeRepeatModeCommandDefault(event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
+        Logger.shared.log("handleChangeRepeatModeCommand: \(event), player: \(String(describing: audioPlayer)), isMainThread: \(Thread.isMainThread)")
+        
+        guard let queuedAudioPlayer = audioPlayer as? QueuedAudioPlayer else { return .commandFailed }
+        guard let event = event as? MPChangeRepeatModeCommandEvent else { return .commandFailed }
+        
+        Logger.shared.log("repeatType: \(event.repeatType)")
+        switch event.repeatType {
+        case .off:
+            queuedAudioPlayer.repeatMode = .off
+        case .all:
+            queuedAudioPlayer.repeatMode = .queue
+        case .one:
+            queuedAudioPlayer.repeatMode = .track
+        @unknown default:
+            return .commandFailed
         }
-        return .commandFailed
+        return .success
     }
     
     private func getRemoteCommandHandlerStatus(forError error: Error) -> MPRemoteCommandHandlerStatus {
