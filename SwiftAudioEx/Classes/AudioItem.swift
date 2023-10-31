@@ -56,6 +56,8 @@ public class DefaultAudioItem: AudioItem {
     
     public var artwork: UIImage?
     
+    public var getArtworkHandler: ((@escaping (UIImage?) -> Void) -> Void)?
+    
     public init(audioUrl: String, artist: String? = nil, title: String? = nil, albumTitle: String? = nil, sourceType: SourceType, artwork: UIImage? = nil) {
         self.audioUrl = audioUrl
         self.artist = artist
@@ -85,10 +87,13 @@ public class DefaultAudioItem: AudioItem {
         sourceType
     }
 
-    public func getArtwork(_ handler: @escaping (UIImage?) -> Void) {
-        handler(artwork)
+    public func getArtwork(_ callback: @escaping (UIImage?) -> Void) {
+        if let handler = getArtworkHandler {
+            handler(callback)
+        } else {
+            callback(artwork)
+        }
     }
-    
 }
 
 /// An AudioItem that also conforms to the `TimePitching`-protocol
