@@ -153,6 +153,36 @@ public struct ChangeRepeatModeCommand: RemoteCommandProtocol {
     }
 }
 
+public struct ChangeShuffleModeCommand: RemoteCommandProtocol {
+    public typealias Command = MPChangeShuffleModeCommand
+    
+    public var id: String
+    public var commandKeyPath: KeyPath<MPRemoteCommandCenter, MPChangeShuffleModeCommand>
+    public var handlerKeyPath: KeyPath<RemoteCommandController, RemoteCommandHandler>
+    
+    public static let `default` = ChangeShuffleModeCommand(
+        id: "ChangeShuffleMode",
+        commandKeyPath: \.changeShuffleModeCommand,
+        handlerKeyPath: \.handleChangeShuffleModeCommand
+    )
+    
+    @discardableResult
+    public func set(shuffleMode: ShuffleMode) -> ChangeShuffleModeCommand {
+        let shuffleType: MPShuffleType
+        switch shuffleMode {
+        case .off:
+            shuffleType = .off
+        case .items:
+            shuffleType = .items
+        case .collections:
+            shuffleType = .collections
+        }
+        
+        MPRemoteCommandCenter.shared()[keyPath: commandKeyPath].currentShuffleType = shuffleType
+        return self
+    }
+}
+
 public struct SeekCommand: RemoteCommandProtocol {
     public typealias Command = MPRemoteCommand
     public var id: String
@@ -193,6 +223,8 @@ public enum RemoteCommand: CustomStringConvertible {
     
     case changeRepeatMode
     
+    case changeShuffleMode
+    
     case seekForward
     case seekBackward
 
@@ -214,6 +246,7 @@ public enum RemoteCommand: CustomStringConvertible {
         case .changeRepeatMode: return "changeRepeatMode"
         case .seekForward: return "seekForward"
         case .seekBackward: return "seekBackward"
+        case .changeShuffleMode: return "changeShuffleMode"
         }
     }
     
@@ -237,6 +270,7 @@ public enum RemoteCommand: CustomStringConvertible {
             .bookmark(isActive: false, localizedTitle: "", localizedShortTitle: ""),
             .changePlaybackRate(supportedRates: [1, 2]),
             .changeRepeatMode,
+            .changeShuffleMode,
             .seekForward,
             .seekBackward
         ]

@@ -29,6 +29,14 @@ public class QueuedAudioPlayer: AudioPlayer, QueueManagerDelegate {
             ChangeRepeatModeCommand.default.set(repeatMode: repeatMode)
         }
     }
+    
+    public var shuffleMode: ShuffleMode = .off {
+        didSet {
+            guard shuffleMode != oldValue else { return }
+            event.shuffleModeChanged.emit(data: shuffleMode)
+            ChangeShuffleModeCommand.default.set(shuffleMode: shuffleMode)
+        }
+    }
 
     public override var currentItem: AudioItem? {
         queue.current

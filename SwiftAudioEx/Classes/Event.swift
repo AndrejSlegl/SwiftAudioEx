@@ -93,6 +93,7 @@ extension AudioPlayer {
         public let currentItem: AudioPlayer.Event<CurrentItemEventData> = AudioPlayer.Event()
         
         public let repeatModeChanged: AudioPlayer.Event<RepeatMode> = AudioPlayer.Event()
+        public let shuffleModeChanged: AudioPlayer.Event<ShuffleMode> = AudioPlayer.Event()
     }
     
     public typealias EventClosure<EventData> = (EventData) -> Void

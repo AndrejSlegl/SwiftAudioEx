@@ -77,6 +77,8 @@ public class RemoteCommandController {
             self.enableCommand(ChangePlaybackRateCommand.default.set(supportedPlaybackRates: supportedRates))
         case .changeRepeatMode:
             self.enableCommand(ChangeRepeatModeCommand.default)
+        case .changeShuffleMode:
+            self.enableCommand(ChangeShuffleModeCommand.default)
         case .seekForward:
             self.enableCommand(SeekCommand.forward)
         case .seekBackward:
@@ -100,6 +102,7 @@ public class RemoteCommandController {
         case .bookmark(_, _, _): self.disableCommand(FeedbackCommand.bookmark)
         case .changePlaybackRate: self.disableCommand(ChangePlaybackRateCommand.default)
         case .changeRepeatMode: self.disableCommand(ChangeRepeatModeCommand.default)
+        case .changeShuffleMode: self.disableCommand(ChangeShuffleModeCommand.default)
         case .seekForward: self.disableCommand(SeekCommand.forward)
         case .seekBackward: self.disableCommand(SeekCommand.backward)
         }
@@ -121,6 +124,7 @@ public class RemoteCommandController {
     public lazy var handleBookmarkCommand: RemoteCommandHandler = handleBookmarkCommandDefault
     public lazy var handleChangePlaybackRateCommand: RemoteCommandHandler = handleChangePlaybackRateCommandDefault
     public lazy var handleChangeRepeatModeCommand: RemoteCommandHandler = handleChangeRepeatModeCommandDefault
+    public lazy var handleChangeShuffleModeCommand: RemoteCommandHandler = handleChangeShuffleModeCommandDefault
     public lazy var handleSeekForwardCommand: RemoteCommandHandler = handleSeekForwardCommandDefault
     public lazy var handleSeekBackwardCommand: RemoteCommandHandler = handleSeekBackwardCommandDefault
     
@@ -230,6 +234,23 @@ public class RemoteCommandController {
             queuedAudioPlayer.repeatMode = .queue
         case .one:
             queuedAudioPlayer.repeatMode = .track
+        @unknown default:
+            return .commandFailed
+        }
+        return .success
+    }
+    
+    private func handleChangeShuffleModeCommandDefault(event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
+        guard let queuedAudioPlayer = audioPlayer as? QueuedAudioPlayer else { return .commandFailed }
+        guard let event = event as? MPChangeShuffleModeCommandEvent else { return .commandFailed }
+        
+        switch event.shuffleType {
+        case .off:
+            queuedAudioPlayer.shuffleMode = .off
+        case .items:
+            queuedAudioPlayer.shuffleMode = .items
+        case .collections:
+            queuedAudioPlayer.shuffleMode = .collections
         @unknown default:
             return .commandFailed
         }
